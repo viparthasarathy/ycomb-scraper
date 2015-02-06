@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <title>
+    
+      Decomposing the Human Palate with Matrix Factorization &ndash;
+    
+    Jeremy Cohen
+  </title>
+
+  <meta name="author" content="Jeremy Cohen" />
+  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <link rel="alternate" type="application/rss+xml" href="/atom.xml" />
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/base.css" type="text/css" media="screen, projection" />
+  <!-- <link rel="stylesheet" href="/css/pygments.css" type="text/css" /> -->
+  <!-- <link media="only screen and (max-device-width: 480px)" href="http://www.jeremymcohen.net/css/mobile.css" type="text/css" rel="stylesheet" /> -->
+  <!-- <link media="only screen and (device-width: 768px)" href="http://www.jeremymcohen.net/css/mobile.css" type="text/css" rel="stylesheet" /> -->
+  <link href='https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz' rel='stylesheet' type='text/css'>
+  <!-- <link rel="apple-touch-icon" href="http://www.jeremymcohen.net/apple-touch-icon.png" /> -->
+
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+
+<body>
+  <section class="sidebar">
+<!--     <a href="/">
+      <img src="https://github.com/jmcohen.png?s=150" height="75" width="75" class="avatar" />
+    </a>
+ -->
+    <section class="name">
+      <a href="/">
+        <span id="fname">Jeremy</span>
+        <span id="lname">Cohen</span>
+      </a>
+    </section>
+
+<!--     <section class="meta">
+      <a href="https://github.com/jmcohen" target="_blank"><i class="fa fa-github"></i></a>
+      <a href="https://twitter.com/" target="_blank"><i class="fa fa-twitter"></i></a>
+      <a href="/atom.xml"><i class="fa fa-rss"></i></a>
+    </section> -->
+
+    <section class="sections">
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/">Posts</a></li>
+      </ul>
+    </section>
+  </section>
+
+  <section class="content">
+  <h1>
+    <a href="/posts/taste">Decomposing the Human Palate with Matrix Factorization</a>
+  </h1>
+
+  <section class="byline">
+    February  6, 2015
+  </section>
+
+  <link rel="stylesheet" href="/css/taste.css" />
+
+<script src="/javascripts/Please.js" type="text/javascript"></script>
+
+<script src="/javascripts/typeahead.js"></script>
+
+<script src="/javascripts/factorsTop.json"></script>
+
+<script src="/javascripts/taste_breakdown.json"></script>
+
+<script src="/javascripts/taste.js" type="text/javascript"></script>
+
+<p><img src="/images/naan.png" />
+<span class="caption">This still frame from the <a href="#taste-breakdown">visualization tool</a> below shows the breakdown of Naan bread into its constituent tastes.</span></p>
+
+<p><span style="clear: both;"></span>
+<br /></p>
+
+<p><strong>Summary:</strong> My classmates and I applied the matrix factorization technique for recommender systems to a data set of 120K user profiles scraped from the recipe-sharing web site AllRecipes.com and extracted 40 latent “tastes” that combine to make up all sorts of human foods.</p>
+
+<p>If you understood that sentence, feel free to skip ahead to Part II of this post, <a href="#matrix-factorization-and-food">Matrix Factorization and Food</a>, where you can view the results and play around with some interactive visualizations.</p>
+
+<h2 id="a-gentle-introduction-to-matrix-factorization">A Gentle Introduction to Matrix Factorization</h2>
+
+<p>First off, I’m sorry.
+I know that the term “matrix factorization” is liable to trigger a life-threatening reaction in persons allergic to linear algebra.
+If reading the title of this blog post is causing to you go into anaphylactic shock, please know that
+I meant no harm.</p>
+
+<p>The truth is that <em>I</em> didn’t pay any attention in linear algebra class either.
+As far as I can tell, <strong>“orthogonal”</strong> is just a fancy synonym for “unrelated” that I use when I want to sound smart, an <strong>“eigenvector”</strong> is probably something horrible that Wernher von Braun dreamt up before he switched employers in 1945,  and a <strong>“product space”</strong> is the kind of thing that a “growth hacker” gets excited about.</p>
+
+<p>The good news is that understanding matrix factorization does not require any linear algebra beyond the definition of a matrix multiplication.</p>
+
+<p>But before I get into the details, I want to motivate the algorithm by pointing out an application to the most heavily studied problem in computer science: <strong>how to get people to buy more things</strong>.</p>
+
+<h3 id="recommender-systems">Recommender Systems</h3>
+
+<p>Suppose that I order the <a href="http://www.amazon.com/First-Years-Stroller-City-Chic/dp/B002WB2G9I/ref=sr_1_1?">City Chic First Years Jet Stroller</a> on Amazon.com.
+Amazon would like to sell me more items.
+Which items should they recommend?</p>
+
+<p>One idea is to recommend items that are intrinsically similar to the <a href="http://www.amazon.com/First-Years-Stroller-City-Chic/dp/B002WB2G9I/ref=sr_1_1?">City Chic First Years Jet Stroller</a>.
+These might be items that also have “stroller” in the name, or items that are made by the same manufacturer, or items whose descriptions share words in common with the description of the stroller.
+This is called <strong>content-based recommendation</strong>.</p>
+
+<p>A more interesting idea is to treat the items as black boxes and somehow <em>learn</em> correlations between the items from the ratings history of all users.
+This is called <strong>collaborative filtering</strong>.
+For example, I would bet that people who buy baby strollers are also likely to buy the <a href="http://www.amazon.com/Essential-Mozart/dp/B00005A8JZ/">Essential Mozart</a> CD collection.
+The association between these two items could never be detected by content-based methods alone because a Mozart collection has zero properties in common with a baby stroller.
+An intelligent yet uninformed alien visiting Planet Earth for a day would never think, “Ah, yes, <em>of course</em> people with no previous discernable interest in classical music will suddenly snatch up the collected works of Wolfgang Amadeus once they are also in the market for a baby stroller.”
+Fortunately, thanks to collaborative filtering, Amazon can pick up on the relationship between these two very distinct items and make the right recommendation.  It’s a win-win situation: Jeff Bezos will become richer and the baby won’t get <a href="http://en.wikipedia.org/wiki/Mozart_effect">left behind</a>.</p>
+
+<p>One of the most fascinating techniques for collaborative filtering is <strong>matrix factorization</strong>.  It is easiest understood as a form of dimensionality reduction.</p>
+
+<h3 id="dimensionality-reduction">Dimensionality Reduction</h3>
+
+<div class="image-right">
+<a href="/images/ideology.jpg"><img src="/images/ideology.jpg" /></a>
+<span class="caption">My recollection of one such quiz.</span>
+</div>
+
+<p>As an insufferable ninth grader, I took a bunch of Facebook quizzes during the 2008 U.S. presidential election cycle.  These quizzes would ask a zillion questions about my personal political opinions, and then they would show me a Cartesian plane with two dimensions—social views and economic views—with a big dot somewhere that was supposed to represent me.
+There were also dots for the candidates, Barack Obama and John McCain; dots for insightful thinkers like Karl Marx, William F. Buckley, and Abraham Lincoln; and a dot for Ayn Rand.</p>
+
+<p>These people had all apparently taken the quiz, and, incredibly enough, the sum total of their lives could be reduced to just two numbers: their position on the “social” axis, and their position on the “economic” axis.</p>
+
+<p>This magic trick is called <strong>dimensionality reduction</strong>.</p>
+
+<p>What a feat!  Political platforms probably have hundreds of dimensions, like taxation, immigration, energy, national security,  climate change, and whether or not the candidate believes it is acceptable to drive to Canada with an Irish Setter tied to the roof of his car.
+But the ideology quiz reduced every politician to just two dimensions: “social” and “economic.”
+Working in this simplified two-dimensional space made it a lot easier to identify the politicians whose views most closely matched my own.</p>
+
+<p>The matrix factorization technique for recommender systems involves a similar kind of dimensionality reduction, except that the algorithm learns the dimensions on its own.</p>
+
+<p>In other words, matrix factorization is the real deal.  It’s the stuff that separates true data scientists from charlatans — the data alchemists, data phrenologists, and data astrologers of the world.</p>
+
+<div class="image-right">
+<a href="/images/vector.jpg"><img src="/images/vector.jpg" /></a>
+<span class="caption">A plausible item vector for the item "Essential Mozart."
+Factor interpretations are on the left; factor weights are in the boxes.</span>
+</div>
+
+<p>Suppose that Amazon could somehow reduce the dimensionality of every item in its inventory down to, say, 50 factors.
+Both items and users could then be represented as weight vectors of length 50.
+Ideally, the factors would have interpretable meanings.
+So, to continue the Mozart example from above, maybe factor 32 represents “neurotic upper-middle-class American parent.”
+In that case, the 32nd weight of each user’s vector would quantify the degree to which that user is a neurotic upper-middle-class American parent. 
+Likewise, the 32nd weight of each <em>item’s</em> vector would quantify the degree to which that item <em>appeals to</em> neurotic upper-middle-class American parents.
+(See an example item vector on the right.)</p>
+
+<p>To predict any user’s rating for any item, we can just take the dot product between the user’s vector and the item’s vector.</p>
+
+<p>I still have not explained how Amazon can use its user/item ratings data to learn a 50-dimensional vector representation of each item and of each user.
+Intuitively, learning these vectors is an optimization problem where the goal is to maximize the agreement between the user/item ratings that these vectors predict, and the user/item ratings that have been observed.
+More on this later.</p>
+
+<p>Nor have I explained how Amazon can specify that factor 32 should be the “neurotic upper-middle-class American parent” factor.
+Actually, it can’t.
+The intuitive meaning of each factor is derived post hoc from vector representations of items and users, rather than the other way around.
+After the item and user vector representations have been generated, data scientists can look at the results, observe that the items with the highest weights for that factor are baby strollers and Mozart CDs, and conclude that this must be a “neurotic upper-middle-class American parent” factor.</p>
+
+<p>This style of reasoning is called “extracting actionable insights.” It is the cornerstone of the data-scientific method that sets modern data science apart from earlier, barbaric, pseudo-data sciences.</p>
+
+<p>The algorithm that learns these 50-dimensional representations does discover the factors, but it doesn’t name them.
+This algorithm is called matrix factorization.  Why?  Because it turns out that this task—learning low-dimensional vector representations for each item and for each user that are consistent with observed user ratings—can be viewed from another angle as a matrix completion problem.</p>
+
+<h3 id="the-matrix-completion-view">The Matrix Completion View</h3>
+
+<div class="image-right">
+<a href="/images/matrix.jpg"><img src="/images/matrix.jpg" /></a>
+<span class="caption">A realistic ratings matrix.
+An empty square means that the user hasn't yet rated the item.</span>
+</div>
+
+<p>Imagine that Amazon has a big, incomplete <code>USERS x ITEMS</code> matrix.
+The value in the <code>(USER, ITEM)</code> square is the rating (say, from 1 to 5) that <code>USER</code> gave to <code>ITEM</code>.
+If <code>USER</code> hasn’t yet rated <code>ITEM</code>, then the <code>(USER, ITEM)</code> square is empty.
+Indeed, most squares are empty.
+Amazon needs to somehow complete the <code>USERS x ITEMS</code> matrix, so that it can make good recommendations, so that it can bring in revenue, because, you know, the Washington Post isn’t going to buy itself.</p>
+
+<p>The matrix factorization approach is to approximate the completed <code>USERS x ITEMS</code> matrix as the product of a <code>USERS x FACTORS</code> matrix and a <code>FACTORS x ITEMS</code> matrix.
+The number of factors is fixed in advance at, say, 50.
+The values in these two individual matrices are carefully chosen such that the product of the two matrices (that is, the <em>completed</em> <code>USERS x ITEMS</code> matrix, or the predicted user/item ratings) is mostly consistent with the <em>incomplete</em> <code>USERS x ITEMS</code> matrix (that is, the observed user/item ratings).
+Each row in the <code>USERS x FACTORS</code> matrix is a <code>1 x 50</code> user vector that represents a single user’s preferences for each of the 50 factors.
+Each column in the <code>FACTORS x ITEMS</code> matrix is a <code>50 x 1</code> item vector that represents the breakdown of a single item into each of the 50 factors.
+When these two matrices are multiplied together, the value at the <code>(USER, ITEM)</code> location in the completed matrix is, by definition, the dot product of <code>USER</code>’s user vector and <code>ITEM</code>’s item vector, which, as we have already seen, is a measure of <code>USER</code>’s preference for <code>ITEM</code>!</p>
+
+<p><a href="/images/factorization.jpg"><img src="/images/factorization.jpg" /></a></p>
+
+<p>As discussed in the preceding section, factorizing the incomplete <code>USERS x ITEMS</code> matrix is an optimization problem where the goal is to minimize some metric of difference between the incomplete <code>USERS x ITEMS</code> matrix (the observed ratings) and the completed <code>USERS x ITEMS</code> matrix (the predicted ratings).
+We will also add a <strong>non-negativity</strong> constraint: every value in the multiplicand and multiplier matrices should be greater than or equal to zero.
+This constraint makes the factors more interpretable.</p>
+
+<p>There are a number of algorithms in the literature for non-negative matrix factorization.
+Below, we use the iterative method described <a href="http://hebb.mit.edu/people/seung/papers/nmfconverge.pdf">here</a>.
+The algorithm uses “multiplicative update rules” to minimize a metric called the KL divergence which measures the difference between the two matrices.</p>
+
+<p>Anyway, enough about Amazon.
+The rest of this post will focus on an application of matrix factorization to a domain—possibly <em>the only</em> domain—that is more central to my life than the online purchase of consumer products.</p>
+
+<h2 id="matrix-factorization-and-food">Matrix Factorization and Food</h2>
+
+<p>I took an introductory machine learning course from <a href="http://www.cs.columbia.edu/~blei/">David Blei</a> in Spring 2014.
+For the final project, a few classmates and I decided to build a recommender system for foods.
+Our recommender system itself turned out to be <a href="http://www.princeton.edu/~jmcohen/recipe-recommendation.pdf">pretty mediocre</a>, but we got interesting factors to fall out of matrix factorization.</p>
+
+<p>We scraped our data set from <a href="http://www.allrecipes.com">AllRecipes.com</a>, a popular recipe-sharing web site.
+With tens of thousands of recipes and over a hundred thousand users, AllRecipes is a gold mine for food data.
+Each AllRecipes user has a recipe box where he or she can list his or her favorite recipes. 
+It was these recipe boxes that we scraped.
+After throwing away all recipes that occurred in fewer than 300 recipe boxes, we were left with 9,546 recipes and 115,308 users.
+All users collectively had 9.6 million recipes in their recipe boxes.</p>
+
+<p>We experimented with two different approaches to the problem of recipe recommendation: a content-based method using only information about the ingredients in each recipe, and a collaborative filtering method using only data about user-recipe preferences.</p>
+
+<p>The content-based method was straightforward: represent each recipe as a vector of all ingredients in the “kitchen,” where the value at each element is the mass fraction that the corresponding ingredient takes up in the recipe.
+To measure the similarity between two recipes, take the <a href="http://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> between their vectors.
+This approach worked fine, but I’ll ignore it for the remainder of this post.</p>
+
+<p>The collaborative filtering method was far more interesting because it didn’t know <em>anything</em> at all other than which users liked which recipes.
+We represented the user-recipe preference data as a <code>115,308 x 9,546</code> user-by-recipe matrix with a 1 in every square where the corresponding user had the corresponding recipe in his/her recipe box, and a 0 everywhere else.
+Then we factorized the user-by-recipe matrix, using 40 factors, into a <code>115,308 x 40</code> user-by-factor matrix and a <code>40 x 9,546</code> factor-by-recipe matrix.</p>
+
+<p>We used the <a href="https://sites.google.com/site/nmftool/">MATLAB NMF toolbox</a> to perform non-negative matrix factorization.
+The NMF algorithm took 8 hours to complete 2,000 iterations on a machine with a 2.2GHz processor and 128 GB RAM.</p>
+
+<p>Sure enough, after eight hours of compute time, the factors produced by non-negative matrix factorization really did seem to correspond to human tastes!</p>
+
+<p>To clarify, each row in the user-by-factor matrix is a <code>1 x 40</code> vector that represents a single user’s preference for each of the 40 factors.
+And each column in the factor-by-recipe matrix is a <code>40 x 1</code> vector that represents the decomposition of a single recipe into its constituent factors.</p>
+
+<p>I will explore three different ways to play around with the data generated by the factorization:</p>
+
+<ol>
+
+<li><a href="#the-tastes">First</a>, we can ask questions like: "What does factor #3 really represent?"
+The easiest way to find out is to look at the dishes with the highest weights in factor #3.
+The top ones are Quinoa and Black Beans, Baked Kale Chips, and Quinoa Side Dish.
+In this example, we could conclude that factor #3 represents vegan food.</li>
+
+<li><a href="#taste-breakdown">Second</a>, we can ask questions like: "Which factors does the dish Butter Chickpea Curry consist of, and in what proportions?"
+Answering this question is as simple as looking up the row for <a class="breakdown-link">Butter Chickpea Curry</a> in the factors-by-recipe matrix produced by NMF.
+Use the <a href="#taste-breakdown">Taste Breakdown</a> visualization tool below to view the factor breakdown of any recipe.
+Apparently, Butter Chickpea Curry is 62% vegetarian, 34% Indian food, and 4% random noise.</li>
+
+<li><a href="#mix-n-match">Third</a>, we can ask questions like "What food would we get if we smashed together the 'vegetarian' factor and the 'cookies/brownies' factor?"
+To find out, we can sort all recipes in decreasing order of cosine similarity to a made-up recipe vector with `0.5` in the 'vegetarian' position and `0.5` in the 'cookies/brownies' position.
+The <a href="#mix-n-match">Mix 'n Match</a> visualization tool below allows you to make such queries.
+<a class="mixnmatch-link" data-mix="9,34">The answer</a>, in this instance, is apparently "Vegan Brownies."</li>
+
+</ol>
+
+<h3 id="the-tastes">The Tastes</h3>
+
+<p>These are the 40 tastes that came out of the matrix factorization.
+We describe each taste by printing the five exemplar recipes with the highest weights.</p>
+
+<div id="taste-grid">
+</div>
+
+<p>A few observations:</p>
+
+<ul>
+  <li>
+    <p>Some tastes correspond to food groups, like <strong>seafood</strong> (taste <span class="taste-hover">4</span>), <strong>bread</strong> (taste <span class="taste-hover">24</span>), <strong>salad</strong> (taste <span class="taste-hover">12</span>), and <strong>beverages</strong>, both <strong>alcoholic</strong> (taste <span class="taste-hover">22</span>) and <strong>non-alcoholic</strong> (taste <span class="taste-hover">23</span>).</p>
+  </li>
+  <li>
+    <p>Other tastes correspond to dietary preferences, like <strong>vegan</strong> (tastes <span class="taste-hover">3</span>, <span class="taste-hover">10</span>) and <strong>barbecue</strong> (taste <span class="taste-hover">31</span>).</p>
+  </li>
+  <li>
+    <p>Still others correspond to national holidays, like <strong>Thanksgiving</strong> (taste <span class="taste-hover">32</span>) and <strong>Superbowl</strong> (taste <span class="taste-hover">7</span>).</p>
+  </li>
+  <li>
+    <p>In a sure sign that AllRecipes users have their priorities straight, a large plurality of tastes are used to differentiate between subtly different kinds of desserts, such as <strong>cake</strong> (taste <span class="taste-hover">8</span>), <strong>cheesecake</strong> (taste <span class="taste-hover">19</span>), <strong>fruit pastries</strong> (tastes <span class="taste-hover">16</span>, <span class="taste-hover">18</span>, <span class="taste-hover">25</span>), <strong>sugary cookies</strong> (taste <span class="taste-hover">9</span>), <strong>chocolatey cookies</strong> (taste <span class="taste-hover">35</span>), <strong>confections</strong> (taste <span class="taste-hover">38</span>), <strong>scones / biscotti</strong> (taste <span class="taste-hover">40</span>), and <strong>fancifully nutritious desserts</strong> (taste <span class="taste-hover">11</span>).</p>
+  </li>
+  <li>
+    <p>Taste <span class="taste-hover">6</span> is entirely devoted to <strong>slow-cooker foods</strong>, and taste <span class="taste-hover">39</span> is nothing but <strong>casserole</strong>.  I fear that AllRecipes.com may be one place, along with the Social Security budget committee, where the nation’s grandmothers hold too much influence.</p>
+  </li>
+  <li>
+    <p>Taste <span class="taste-hover">28</span> corresponds to <strong>Indian / Thai</strong> food.
+I was faintly surprised that no other ethnic cuisines came out of the factorization, although I suppose taste <span class="taste-hover">39</span> might qualify as Mexican, and taste <span class="taste-hover">27</span> has a definite German flair.</p>
+  </li>
+  <li>
+    <p>Taste <span class="taste-hover">13</span> comprises dishes—macaroni and cheese, meat loaf, lasagna, potato salad—that can only be described as <strong>“comfort food.”</strong>
+This took me by surprise.
+I had always assumed that the concept of “comfort food” as a distinct class of foods was a mere figment of Paula Deen’s imagination, sort of like the concept of “bacon biscuits deep fried in butter that don’t give you diabetes.”</p>
+  </li>
+  <li>
+    <p>Most of the remaining tastes correspond to <strong>chicken</strong> in various states of matter.</p>
+  </li>
+</ul>
+
+<h3 id="taste-breakdown">Taste Breakdown</h3>
+
+<p>This interactive tool gives the taste breakdown of 9,000 or so recipes from <a href="http://allrecipes.com">AllRecipes.com</a>.</p>
+
+<p>To pull up the taste breakdown for any food, just start typing the name of the food into the search bar, and then click on one of the recipes that will pop up in the autocomplete box.</p>
+
+<p>Clicking on any of the example recipes that appear will pull up <em>their</em> taste breakdowns.</p>
+
+<div id="breakdown">
+	<div id="search-wrapper">
+		<input id="search" class="typeahead" type="text" />
+	</div>
+	<div id="visualization">
+		<a class="permalink"><i class="fa fa-link"></i></a>
+		<div id="canvas-holder">
+			<canvas id="canvas" width="372" height="150" />
+		</div>			
+	</div>
+</div>
+
+<p>To share the link to a taste breakdown that catches your interest, right click the permalink icon and select “Copy Link Address” in your browser.</p>
+
+<p>Here are some intuitions that were borne out by the matrix factorization:</p>
+
+<ul>
+  <li>
+    <p><a class="breakdown-link">Naan</a> is a combination of Indian food (taste <span class="taste-hover">28</span>), bread (taste <span class="taste-hover">24</span>), and vegetarian food (taste <span class="taste-hover">10</span>).</p>
+  </li>
+  <li>
+    <p><a class="breakdown-link">Blueberry Waffles with Fast Blueberry Sauce</a> is mix of fruit desserts (taste <span class="taste-hover">25</span>), breakfast foods (taste <span class="taste-hover">34</span>), and granola (taste <span class="taste-hover">11</span>).</p>
+  </li>
+  <li>
+    <p><a class="breakdown-link">Butter Chickpea Curry</a> is a cross between vegetarian food (taste <span class="taste-hover">10</span>), and Indian food (taste <span class="taste-hover">28</span>).</p>
+  </li>
+  <li>
+    <p><a class="breakdown-link">Cedar Planked Salmon</a> is part seafood (taste <span class="taste-hover">4</span>) and part barbecue (taste <span class="taste-hover">31</span>).</p>
+  </li>
+  <li>
+    <p><a class="breakdown-link">Coq Au Vin</a> is popular among people who also like both alcoholic beverages (taste <span class="taste-hover">22</span>) and chicken (taste <span class="taste-hover">14</span>).</p>
+  </li>
+</ul>
+
+<div style="clear: both;"></div>
+
+<h3 id="mix-n-match">Mix ‘n Match</h3>
+
+<p>This interactive tool lets you mix and match tastes!
+Select two or three tastes from the two-column list below, and see which recipes most closely match the combined taste profile.</p>
+
+<p>If you’re out of ideas, try mixing <a class="mixnmatch-link" data-mix="8,21">alcoholic beverages with sugar cookies</a>, <a class="mixnmatch-link" data-mix="5,30">slow cooker with barbecue</a>, or <a class="mixnmatch-link" data-mix="39,33">biscotti with breakfast foods</a>.</p>
+
+<div id="mixnmatch">
+	<div id="selected-tastes">
+		<h4 id="help">Click on some tastes to begin!</h4>
+	</div>
+	<div id="tastes-list">
+		<div id="tastes-left-col"></div>
+		<div id="tastes-right-col"></div>
+	</div>
+	<a class="permalink"><i class="fa fa-link"></i></a>
+	<div id="recommendations">
+		<h4>Dishes closely matching the selected taste profile:</h4>
+		<ol id="recommend-list" class="recipe-list">
+		</ol>
+	</div>
+</div>
+
+<h3 id="data">Data</h3>
+
+<p><a href="https://github.com/jmcohen/taste">Code and data</a> are available on Github.</p>
+
+<h3 id="thanks-for-reading">Thanks for Reading</h3>
+
+<p>This post describes a project carried out for <a href="http://www.cs.columbia.edu/~blei/">David Blei’s</a> course “COS 424: Interacting with Data” in Spring 2014 at Princeton University by <a href="https://angel.co/robert-sami">Rob Sami</a> (now Google), Aaron Schild (now Berkeley), Spencer Tank (now Palantir), and me.</p>
+
+<p>Thanks to <a href="https://angel.co/charles-guo">Charles Guo</a>, <a href="http://crmarsh.com">Charlie Marsh</a>, <a href="http://lucasjcm.com">Lucas Mayer</a>, <a href="http://shubhro.com">Shubhro Saha</a>, and <a href="https://twitter.com/jakesimon">Jacob Simon</a> for reading drafts of this post.</p>
+
+
+  </section>
+</section>
+</body>
+
+</html>

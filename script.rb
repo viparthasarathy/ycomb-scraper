@@ -10,10 +10,38 @@ page = Nokogiri::HTML(open(BASE_URL))
 hrefs = page.css('.subtext a').map { |link| link['href'] }
 hrefs.select! { |link| link.match(/item\?.*/) }
 
-hrefs.each do |link| 
-	unless File.exists?("#{LOCAL_DIR}/#{link}.html")
-	  File.open("#{LOCAL_DIR}/#{link}.html", 'w') do |f|
-		  f.write(open("#{BASE_URL}#{link}").read)
+hrefs.each do |id| 
+	comment_section = Nokogiri::HTML(open("#{BASE_URL}#{id}"))
+	main_info = comment_section.at_css('.title a')
+	header    =  main_info.text.gsub(/\s+/, "_")
+	link      =  main_info['href']
+	num       =  id.gsub(/\D/, "")
+	dir       =  "#{LOCAL_DIR}/#{header}_#{num}"
+	unless File.exists?(dir)
+
+		FileUtils.makedirs(dir)
+
+	  File.open("#{dir}/#{id}_comments.html", 'w') do |f|
+	  	puts "Downloading comments..."
+	  	begin
+		    f.write(open("#{BASE_URL}#{id}").read)
+		  rescue RuntimeError => e
+		  	puts e
+		  end
 	  end
+
+	  File.open("#{dir}/#{id}_link.html", 'w') do |f|
+	   	puts "Downloading link..."
+	  	unless link == id
+	  	  begin
+	  	    f.write(open(link).read)
+	  	  rescue RuntimeError => e
+	  		  puts e
+	  	  end
+	    end
+	    puts "Switching directories..."
+	    sleep 2
+    end
   end
 end
+
