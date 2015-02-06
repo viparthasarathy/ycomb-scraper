@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Making PGP Key Management Invisible So Johnny Can Encrypt</title>
+    <meta name="description" content="" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/screen.css?v=9d22f056be" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-52535674-2', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
+    <link rel="canonical" href="http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/" />
+    
+    <meta property="og:site_name" content="Whiteout Networks" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Making PGP Key Management Invisible So Johnny Can Encrypt" />
+    <meta property="og:description" content="We’ve written about usability for PGP email encryption before. In a recent post we’ve touched on the usability of crypto apps in general and published a specification for multi-device sync of a user’s private key.  This post..." />
+    <meta property="og:url" content="http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/" />
+    <meta property="og:image" content="http://blog.whiteout.io/content/images/2015/02/Bildschirmfoto-2015-02-06-um-19-28-22-1.png" />
+    <meta property="article:published_time" content="2015-02-06T18:19:11.000Z" />
+    <meta property="article:modified_time" content="2015-02-06T22:19:18.000Z" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Making PGP Key Management Invisible So Johnny Can Encrypt" />
+    <meta name="twitter:description" content="We’ve written about usability for PGP email encryption before. In a recent post we’ve touched on the usability of crypto apps in general and published a specification for multi-device sync of a user’s private key.  This post..." />
+    <meta name="twitter:url" content="http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/" />
+    <meta name="twitter:image:src" content="http://blog.whiteout.io/content/images/2015/02/Bildschirmfoto-2015-02-06-um-19-28-22-1.png" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "Whiteout Networks",
+    "author": {
+        "@type": "Person",
+        "name": "Tankred Hase",
+        "image": "http://blog.whiteout.io/content/images/2015/02/tankred-1.jpg",
+        "url": "http://blog.whiteout.io/author/tankred",
+        "sameAs": "https://whiteout.io"
+    },
+    "headline": "Making PGP Key Management Invisible So Johnny Can Encrypt",
+    "url": "http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/",
+    "datePublished": "2015-02-06T18:19:11.000Z",
+    "dateModified": "2015-02-06T22:19:18.000Z",
+    "image": "http://blog.whiteout.io/content/images/2015/02/Bildschirmfoto-2015-02-06-um-19-28-22-1.png",
+    "description": "We’ve written about usability for PGP email encryption before. In a recent post we’ve touched on the usability of crypto apps in general and published a specification for multi-device sync of a user’s private key.  This post..."
+}
+    </script>
+
+    <meta name="generator" content="Ghost 0.5" />
+    <link rel="alternate" type="application/rss+xml" title="Whiteout Networks" href="http://blog.whiteout.io/rss/" />
+</head>
+<body class="post-template">
+
+    
+
+
+<header class="main-header post-head " style="background-image: url(/content/images/2015/02/Bildschirmfoto-2015-02-06-um-19-28-22-1.png)">
+    <nav class="main-nav overlay clearfix">
+        <a class="back-button icon-arrow-left" href="http://blog.whiteout.io">Home</a>
+        <a class="subscribe-button" href="https://whiteout.io">whiteout.io</a>
+    </nav>
+</header>
+
+<main class="content" role="main">
+
+    <article class="post">
+
+        <header class="post-header">
+            <h1 class="post-title">Making PGP Key Management Invisible So Johnny Can Encrypt</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2015-02-06">06 February 2015</time> 
+            </section>
+        </header>
+
+        <section class="post-content">
+            <p>We’ve written about usability for PGP email encryption before. In a recent post we’ve touched on the <a href="https://blog.whiteout.io/2015/01/29/why-alice-has-a-problem-if-bob-cant-encrypt/">usability of crypto apps</a> in general and published a specification for <a href="https://blog.whiteout.io/2014/07/07/secure-pgp-key-sync-a-proposal/">multi-device sync</a> of a user’s private key. </p>
+
+<p>This post will address one of the hardest problems in PGP, namely key discovery of a contact’s public key.</p>
+
+<h2 id="uxvssecuritytradeoff">UX vs. Security Tradeoff</h2>
+
+<p>Much has been written about the usability of PGP. Recently Matthew Green wrote a <a href="http://blog.cryptographyengineering.com/2014/08/whats-matter-with-pgp.html">great post</a> titled <em>What's the matter with PGP?</em>. The post talks a lot about technical aspects of the protocol, but also about what should be addressed in terms of usability for key management:</p>
+
+<blockquote>
+  <p><strong>A proper approach to key management.</strong> This could be anything from centralized key management as in Apple's iMessage -- which would still be better than nothing -- to a decentralized (but still usable) approach like the one offered by Signal or OTR. Whatever the solution, in order to achieve mass deployment, keys need to be made much more manageable or else submerged from the user altogether.</p>
+</blockquote>
+
+<p>I agree completely. It’s not the user’s fault that the protocol is so complicated and they shouldn’t be burdened with it. That’s why we’ve added automatic public key lookup for incoming and outgoing messages in our PGP mail client <a href="https://whiteout.io/">Whiteout Mail</a>. </p>
+
+<p>Here’s a look at how it works.</p>
+
+<h3 id="howwhiteoutmailpublickeydiscoveryworks">How Whiteout Mail Public Key Discovery Works</h3>
+
+<p>Up until now, Whiteout Mail had it’s own closed key server under <a href="https://keys.whiteout.io">keys.whiteout.io</a>. We basically did what Matthew Green proposed. We created a centralized authority that would accept an uploaded public key only after validating a user’s email address (proving ownership of the key). Keys were fetched automatically while reading and writing in Whiteout Mail and messages were encrypted by default. This worked quite well, but only from Whiteout user to Whiteout user. If users wanted to write PGP messages to non-whiteout users, they would have to find the recipient’s public PGP key and manually import it as a file. This is not only tedious but also impossible on platforms like iOS, where apps don’t have access to the filesystem.</p>
+
+<p>So users asked for support of standard <a href="http://en.wikipedia.org/wiki/Key_server_%28cryptographic%29">HKP key servers</a> and there was a <a href="https://github.com/whiteout-io/mail-html5/issues/236">discussion</a> on how to best handle key import.</p>
+
+<h3 id="automatichkplookupinwhiteoutmail">Automatic HKP Lookup in Whiteout Mail</h3>
+
+<p>We felt strongly that encryption should just work for average users and that most should never be exposed to key management in the first place. Here’s what we came up with:</p>
+
+<ol>
+<li><p>When a user composes a new message to a recipient’s email address, the client first queries the local keychain. This keychain includes cached keys imported from any source.</p></li>
+<li><p>If the recipient’s key is not found in the local key ring the client then queries our own key server. These keys have been validated by our key server to ensure recipient key ownership.</p></li>
+<li><p>If there is no key for the recipient on our key server, a list of well known HKP key servers (e.g. pgp.mit.edu) is queried. If a key is found, it is imported to the local key ring by a TOFU (trust on first use) principle.</p></li>
+<li><p>If a key is found, it will be used to encrypt the message. The user will also be notified in the UI by changing the color from red (insecure) to blue (secure).</p></li>
+</ol>
+
+<blockquote>
+  <p><strong>"But what if an attacker uploads a fake public key to pgp.mit.edu and users don’t notice?"</strong></p>
+</blockquote>
+
+<p>For most users this is rarely an issue as the attacker would need access to the recipient’s mailbox to decrypt the message (that has been encrypted to the wrong key). It depends on the type of attacker of course. State level adversaries that can intercept a wrongly encrypted message in transit, could decrypt the message. But if this is your threat model, you will want to verify the PGP key fingerprint over a second channel anyway.</p>
+
+<p>So why design our encryption solution for an edge case and ignore the common case which would lead to a more usable experience for the masses?</p>
+
+<p>Even with TOFU key lookup, users can later always navigate to the contacts menu and verify a recipient’s key fingerprint if they need to. There is a trade off between security and usability here, but users get transparency when they need it, and it's as painless as possible in most cases.</p>
+
+<h2 id="howweimplementedhkpsupportforwhiteoutmail">How We Implemented HKP Support for Whiteout Mail</h2>
+
+<p>Before integrating HKP support, we looked at current key server implementations and saw that it wasn’t possible to integrate them into our app, due to some missing features.</p>
+
+<h3 id="missingfeaturesinhkptoday">Missing features in HKP today</h3>
+
+<ul>
+<li>No SSL support</li>
+<li>Bad availability/scalability</li>
+<li>No email address validation of uploaded keys</li>
+<li>No CORS support (<a href="http://lists.gnupg.org/pipermail/gnupg-users/2014-April/049446.html">see here</a>)</li>
+</ul>
+
+<p>We couldn’t make cross origin requests to HKP servers from the web version of our app. So instead we decided to use our current key server as a proxy and query multiple HKP servers for maximum availability and performance. Here’s a quick summary of our current key server architecture:</p>
+
+<h3 id="whiteoutpublickeyserver">Whiteout Public Key Server:</h3>
+
+<ul>
+<li>Modern REST style api</li>
+<li>SSL only</li>
+<li>CORS support</li>
+<li>Email address validation of uploaded key</li>
+<li>Automatic lookup on multiple HKP servers (first request wins)</li>
+<li>Automatic upload of public keys to HKP servers (after validation on our server)</li>
+<li>Autoscaling application server</li>
+<li>MongoDB cluster</li>
+</ul>
+
+<h3 id="restapi">REST API:</h3>
+
+<p>Host: <strong><a href="https://keys.whiteout.io">https://keys.whiteout.io</a></strong></p>
+
+<h4 id="fetchkeyget">Fetch key (GET)</h4>
+
+<ul>
+<li>By email (short hand)
+<strong>/:emailAddress</strong></li>
+<li>By email (long)
+<strong>/publickey/user/:emailAddress</strong></li>
+<li>By key ID
+<strong>/publickey/key/:keyId</strong></li>
+</ul>
+
+<h4 id="uploadkeyput">Upload key (PUT)</h4>
+
+<ul>
+<li>Upload new key
+<strong>/publickey/user/:emailAddress/key/:keyId</strong></li>
+</ul>
+
+<h2 id="summary">Summary</h2>
+
+<p>Using this api any PGP user (even non-Whiteout users) can link their pgp key with <strong><a href="https://keys.whiteout.io/emailAddress">https://keys.whiteout.io/emailAddress</a></strong>. And any pgp user will be able to send and receive encrypted messages with Whiteout users, since HKP support goes both ways.</p>
+
+<p>The main advantage to the approach is that encryption will just work. Technically savvy GPG users will be able to send and receive messages with average users like Johnny. Can't get your Johnny to use GPG? Just send him over to <a href="https://mail.whiteout.io">mail.whiteout.io</a> and leave your GPG setup untouched.</p>
+
+<p>We look forward to your feedback and ideas. Please don't hesitate to ring us up on <a href="https://twitter.com/whiteoutio">twitter</a> or via <a href="mailto:info@whiteout.io">mail</a>.</p>
+
+<p>Happy encrypting!</p>
+        </section>
+
+        <footer class="post-footer">
+
+
+            <figure class="author-image">
+                <a class="img" href="/author/tankred/" style="background-image: url(/content/images/2015/02/tankred-1.jpg)"><span class="hidden">Tankred Hase's Picture</span></a>
+            </figure>
+
+            <section class="author">
+                <h4><a href="/author/tankred/">Tankred Hase</a></h4>
+
+                    <p>Our company was founded in 2013 in Munich. Our mission is to provide secure email that is easy to use and runs on all devices.</p>
+                <div class="author-meta">
+                    <span class="author-location icon-location">Munich, Germany</span>
+                    <span class="author-link icon-link"><a href="https://whiteout.io">https://whiteout.io</a></span>
+                </div>
+            </section>
+
+
+            <section class="share">
+                <h4>Share this post</h4>
+                <a class="icon-twitter" href="https://twitter.com/share?text=Making%20PGP%20Key%20Management%20Invisible%20So%20Johnny%20Can%20Encrypt&amp;via=whiteoutio&amp;url=http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <span class="hidden">Twitter</span>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <span class="hidden">Facebook</span>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=http://blog.whiteout.io/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <span class="hidden">Google+</span>
+                </a>
+            </section>
+
+        </footer>
+
+    </article>
+
+</main>
+
+
+
+    <footer class="site-footer clearfix">
+        <section class="copyright"><a href="http://blog.whiteout.io">Whiteout Networks</a> &copy; 2015</section>
+        <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
+    </footer>
+
+    <script src="/public/jquery.min.js?v=9d22f056be"></script>
+
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=9d22f056be"></script>
+    <script type="text/javascript" src="/assets/js/index.js?v=9d22f056be"></script>
+
+<img src="/view.gif?page=/2015/02/06/making-pgp-key-management-invisible-so-johnny-can-encrypt/" alt="" style="display:none" hidden />
+</body>
+</html>

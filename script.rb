@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'open-uri'
 require 'fileutils'
 BASE_URL = "https://news.ycombinator.com/"
-LOCAL_DIR = 'ycombinator-data/pages'
+LOCAL_DIR = 'ycombinator-data'
 
 FileUtils.makedirs(LOCAL_DIR) unless File.exists?(LOCAL_DIR)
 
@@ -29,18 +29,32 @@ hrefs.each do |id|
 		  	puts e
 		  end
 	  end
+    
+    unless link == id
+    	if link[-3..-1] == "pdf"
+    		File.open("#{dir}/#{id}_link.pdf", 'w') do |f|
+    			puts "Downloading link..."
+    			begin
+    				f.write(open(link).read)
+    			rescue RuntimeError => e
+    				puts e
+    			end
+    			puts "Switching directories..."
+    			sleep 2
+    		end
 
-	  File.open("#{dir}/#{id}_link.html", 'w') do |f|
-	   	puts "Downloading link..."
-	  	unless link == id
-	  	  begin
-	  	    f.write(open(link).read)
-	  	  rescue RuntimeError => e
-	  		  puts e
-	  	  end
-	    end
-	    puts "Switching directories..."
-	    sleep 2
+    	else
+	      File.open("#{dir}/#{id}_link.html", 'w') do |f|
+	   	    puts "Downloading link..."
+	  	      begin
+	  	        f.write(open(link).read)
+	  	      rescue RuntimeError => e
+	  		      puts e
+	  	      end
+	        puts "Switching directories..."
+	        sleep 2
+	      end
+      end
     end
   end
 end

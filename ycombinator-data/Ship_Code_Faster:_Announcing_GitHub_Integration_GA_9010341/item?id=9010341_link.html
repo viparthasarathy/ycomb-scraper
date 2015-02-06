@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><script type="text/javascript">var NREUMQ=NREUMQ||[];NREUMQ.push(["mark","firstbyte",new Date().getTime()]);</script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Heroku | Ship Code Faster: Announcing GitHub Integration GA</title>
+	<link href="/assets/application-21957ee285724514ffd48b6740ce98de.css" media="screen" rel="stylesheet" type="text/css" />
+
+	<script src="/assets/application-e14d071700f15686422b0392c11542ec.js" type="text/javascript"></script>
+
+	<script src='//use.typekit.net/lpc2yow.js'></script>
+		<script>try{Typekit.load();}catch(e){}</script>
+
+	<link href="http://feeds2.feedburner.com/heroku" rel="alternate" title="Primary Feed" type="application/rss+xml" />
+
+	<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icons/touch-icon-57.png" />
+	<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icons/touch-icon-72.png" />
+	<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icons/touch-icon-114.png" />
+	<link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icons/touch-icon-144.png" />
+	<link rel="apple-touch-icon" sizes="512x512" href="/apple-touch-icons/touch-icon-512.png" />
+
+		  <link rel="canonical" href="https://blog.heroku.com/archives/2015/2/6/heroku_github_integration" />
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+</head>
+<body>
+	<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-JD26"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-JD26');</script>
+<!-- End Google Tag Manager -->
+
+<!-- Start of HubSpot Logging Code  -->
+<script type="text/javascript" language="javascript">
+var hs_portalid=162276;
+var hs_salog_version = "2.00";
+var hs_ppa = "heroku.app12.hubspot.com";
+document.write(unescape("%3Cscript src='" + document.location.protocol + "//" + hs_ppa + "/salog.js.aspx' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<!-- End of HubSpot Logging Code -->
+
+<!-- Start of HubSpot Enterprise Logging Code -->
+<script type="text/javascript">
+(function() {
+ var p = document.createElement('script');
+ p.type = 'text/javascript'; p.async = true;
+ p.src = '//d2f7h8c8hc0u7y.cloudfront.net/performable/pax/4qH98S.js';
+ var s = document.getElementsByTagName('script')[0];
+ s.parentNode.insertBefore(p, s);
+})();
+</script>
+<!-- End of HubSpot Enterprise Logging Code -->
+
+  <header id="page-header">
+  <div class="wrapper">
+    <h1 id="logo">
+      <a href="https://www.heroku.com/home" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;heroku&quot;}">Heroku</a>
+    </h1>
+
+    <span class='mobile-nav'>Show nav</span>
+
+    <ul>
+      <li><a href="https://www.heroku.com/features" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;features&quot;}">Features</a></li>
+      <li><a href="https://www.heroku.com/pricing" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;pricing&quot;}">Pricing</a></li>
+      <li><a href="https://addons.heroku.com" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;add-ons&quot;}">Add-ons</a></li>
+      <li><a href="https://blog.heroku.com" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;blog&quot;}">Blog</a></li>
+      <li><a href="https://devcenter.heroku.com" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;documentation&quot;}">Documentation</a></li>
+      <li><a href="https://help.heroku.com" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;support&quot;}">Support</a></li>
+      <li><a href="https://www.heroku.com/contact" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;contact&quot;}">Contact</a></li>
+
+        <li class="user sign-up">
+          <a href="https://id.heroku.com" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;log-in&quot;}">Log in</a>
+          <span>or</span>
+          <a href="https://id.heroku.com/signup" class="sign-up highlight" data-trackable="{&quot;event&quot;:&quot;clicked&quot;,&quot;target&quot;:&quot;nav&quot;,&quot;page&quot;:&quot;sign-up&quot;}">Sign up</a>
+        </li>
+    </ul>
+  </div>
+</header>
+
+
+	<div class="content">
+
+		
+
+
+  <article>
+<hgroup>
+<h1><a href="https://blog.heroku.com/archives/2015/2/6/heroku_github_integration">Ship Code Faster: Announcing GitHub Integration GA</a></h1>
+<h2 class='byline'>
+Posted <time class="timeago" datetime="2015-02-06T17:26:07Z">2015-02-06 17:26:07 UTC</time> by Michael
+</h2>
+</hgroup>
+<div class='post_body'>
+<p>Today we’re announcing the general availability of GitHub integration for Heroku. When enabled, GitHub pushes are deployed immediately to linked Heroku apps. This is a big step forward for people working on apps with source managed on GitHub and deployed to Heroku. The integration has been in beta in Heroku Dashboard for a while, and we’ve seen great adoption and positive feedback.</p>
+
+<p>When a GitHub repo is connected to a Heroku app, you can either manually deploy branches from the repo, or you can configure a particular branch to auto-deploy to the app on every GitHub push. With auto-deploys enabled, you no longer have to maintain a separate <code>heroku</code> Git remote: Simply push to GitHub and changes are automatically deployed on Heroku.</p>
+
+<h2 class='anchored'>
+  <a name='configuring-github-integration' href='#configuring-github-integration'>Configuring GitHub integration</a>
+</h2>
+
+<p>To connect a Heroku app with a GitHub repo, go to the app’s “Deploy” tab on Heroku Dashboard and select the GitHub pane. If you haven’t connected your Heroku and GitHub accounts, you will be prompted to complete the GitHub OAuth flow. Heroku needs access to help you select repos and to be able to register webhooks triggered when you push to GitHub. Once connected, you can select which repo associated with your GitHub account to link to the Heroku app.</p>
+
+<p><img src="https://heroku-blog-assets.s3.amazonaws.com/1423244396-gh-integration-screenshot.png" alt="gh-integration-screenshot"></p>
+
+<p>With app and repo connected, you can either manually deploy a specific branch, or select a Git branch that will be auto-deployed whenever it’s pushed to on GitHub.</p>
+
+<p>For auto-deploys, you can optionally configure Heroku to wait for continuous integration (like Travis CI) to pass on GitHub. With that option enabled, Heroku will only auto-deploy after all GitHub <a href="https://developer.github.com/v3/repos/statuses/">statuses</a> for that commit have succeeded.</p>
+
+<p>Any builds created by the GitHub integration can be tracked in the app’s “Activity” tab and build output for running builds is streamed in Dashboard.</p>
+<h2 class='anchored'>
+  <a name='recommended-setup' href='#recommended-setup'>Recommended setup</a>
+</h2>
+
+<p>Unless your testing and CI is very reliable, we recommend that you only auto-deploy to a staging app. You can use the <a href="https://devcenter.heroku.com/articles/labs-pipelines">Pipelines labs feature</a> to promote changes from staging to production, or you can alternatively also link your production app to GitHub and trigger manual deploys to production once you’ve confirmed that a commit is good.</p>
+
+<p><em>If an issue is encountered during a Heroku deployment, be it manual or automatic, you can always <a href="https://devcenter.heroku.com/articles/releases">rollback to the last known good release</a> from either the CLI or in Dashboard.</em></p>
+
+<p>We’re excited about this integration because we know that GitHub is an important part of many of our users’ workflow. With GitHub integration for Heroku, we’re making the process of shipping code on GitHub to Heroku much simpler.</p>
+
+<div class='meta'>
+</div>
+</div>
+</article>
+
+
+
+    <div id="feeds">
+
+  <p>
+  Browse the <a href="/archives">blog archives</a> or
+  subscribe to the <a title="Full-text RSS feed" href="http://feeds2.feedburner.com/heroku">full-text</a> feed.
+  </p>
+
+</div>
+
+	</div>
+
+  <footer class="main-footer">
+  <div class="wrapper">
+    <h1 class="brand"><a href="https://www.heroku.com/home" class="logo">Heroku</a></h1>
+
+    <nav>
+      <ul class="primary">
+        <li><a href="https://www.heroku.com/pricing">Pricing</a></li>
+        <li><a href="https://www.heroku.com/critical">Critical Apps</a></li>
+        <li><a href="https://addons.heroku.com/">Add-ons</a></li>
+        <li><a href="https://postgres.heroku.com/">Postgres</a></li>
+        <li><a href="https://partners.heroku.com/">Partners</a></li>
+        <li><a href="https://devcenter.heroku.com/">Documentation</a></li>
+        <li><a href="https://help.heroku.com/">Help</a></li>
+        <li><a href="https://status.heroku.com/">Status</a></li>
+      </ul>
+
+      <ul class="secondary">
+        <li><a href="https://www.heroku.com/about">About Heroku</a></li>
+        <li><a href="https://www.heroku.com/contact">Contact</a></li>
+        <li><a href="https://jobs.heroku.com/">Careers</a></li>
+        <li><a href="https://www.heroku.com/customers">Customers</a></li>
+        <li><a href="https://blog.heroku.com/">Blog</a></li>
+        <li><a href="http://engineering.heroku.com/">Engineering</a></li>
+      </ul>
+
+      <ul class="tertiary">
+        <li><a href="https://www.heroku.com/home">heroku.com</a></li>
+        <li><a href="https://www.heroku.com/policy/tos">Legal</a></li>
+        <li><a href="https://www.heroku.com/policy/privacy">Privacy Policy</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+
+<script type="text/javascript">if (!NREUMQ.f) { NREUMQ.f=function() {
+NREUMQ.push(["load",new Date().getTime()]);
+var e=document.createElement("script");
+e.type="text/javascript";
+e.src=(("http:"===document.location.protocol)?"http:":"https:") + "//" +
+  "js-agent.newrelic.com/nr-100.js";
+document.body.appendChild(e);
+if(NREUMQ.a)NREUMQ.a();
+};
+NREUMQ.a=window.onload;window.onload=NREUMQ.f;
+};
+NREUMQ.push(["nrfj","beacon-5.newrelic.com","0128bee961","1492710","elhcREAKWlpUQEpEWkpDHUNaCkE=",5,20,new Date().getTime(),"","","","",""]);</script></body>
+</html>
