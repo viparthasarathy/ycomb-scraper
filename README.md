@@ -1,6 +1,6 @@
 # Documentation
 
-This is a small project to get some exposure to using the Nokogiri and Open-Uri gem. As of now, this repository currently contains the 'script.rb' ruby file which can be run through the terminal to download and save the comments from each front page link of Hacker News.
+This is a small project to get some exposure to using the Nokogiri and Open-Uri gem. As of now, this repository currently contains the 'script.rb' ruby file which can be run through the terminal to download and save the comments from each front page link of [Hacker News](https://news.ycombinator.com/).
 
 
 ## Future Plans
