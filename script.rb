@@ -18,7 +18,7 @@ hrefs.each do |id|
 	num       =  id.gsub(/\D/, "")
 	dir       =  "#{LOCAL_DIR}/#{header}_#{num}"
 	unless File.exists?(dir)
-
+		
 		FileUtils.makedirs(dir)
 
 	  File.open("#{dir}/#{id}_comments.html", 'w') do |f|
@@ -39,23 +39,21 @@ hrefs.each do |id|
     			rescue RuntimeError => e
     				puts e
     			end
-    			puts "Switching directories..."
-    			sleep 2
     		end
 
     	else
 	      File.open("#{dir}/#{id}_link.html", 'w') do |f|
 	   	    puts "Downloading link..."
-	  	      begin
-	  	        f.write(open(link).read)
-	  	      rescue RuntimeError => e
-	  		      puts e
-	  	      end
-	        puts "Switching directories..."
-	        sleep 2
+	  	    begin
+	  	      f.write(open(link).read)
+	  	    rescue RuntimeError => e
+	  		    puts e
+	  	    end
 	      end
       end
     end
+    puts "Switching directories..."
+    sleep 2
   end
 end
 

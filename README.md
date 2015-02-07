@@ -13,6 +13,6 @@ The folders are named after the subject of the post followed by the post ID. The
 
 ~~Furthermore, the saved html files are currently named after their id number. This makes it a painful process to find something interesting to read; the saved title should be changed to both the submitted title of the link/content and the id.~~ Completed.
 
-The script currently saves all links as HTML files, despite the fact that Hacker News permits posts to direct to PDF files. This results in PDF files simply not being saved and a blank HTML file as the end result instead.
+~~The script currently saves all links as HTML files, despite the fact that Hacker News permits posts to direct to PDF files. This results in PDF files simply not being saved and a blank HTML file as the end result instead.~~ Completed.
 
 Finally, the script could potentially target discussions outside of purely the front page of Hacker News. Given how Hacker News indexes its conversations/links (id value that starts at 0), it should be fairly simple (but time consuming and memory consuming for the computer) to copy every single disussion that has ever taken place on Hacker News. There are also concerns about proper etiquette regarding how frequent requests should be made.
